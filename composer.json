@@ -1,0 +1,31 @@
+{
+    "name": "elixir/elixir-routing",
+    "description": "Component routing",
+    "version": "1.0.0",
+    "license": "BSD-3-Clause",
+    "keywords": [
+        "elixir",
+        "routing"
+    ],
+    "homepage": "https://github.com/cedtanghe/elixir-routing",
+    "repositories": [
+    ],
+    "require": {
+        "php": ">=5.4"
+    },
+    "require-dev": {
+        "phpunit/PHPUnit": "~4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Elixir\\Routing\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Elixir\\Test\\Routing\\": "tests/"
+        }
+    },
+    "suggest": {
+    }
+}
