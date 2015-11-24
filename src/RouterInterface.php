@@ -2,6 +2,7 @@
 
 namespace Elixir\Routing;
 
+use Elixir\Routing\Collection;
 use Elixir\Routing\Generator\GeneratorInterface;
 use Elixir\Routing\Matcher\MatcherInterface;
 use Elixir\Routing\Matcher\RouteMatch;
@@ -12,21 +13,26 @@ use Elixir\Routing\Matcher\RouteMatch;
 interface RouterInterface
 {
     /**
+     * @return Collection
+     */
+    public function getCollection();
+
+    /**
      * @return MatcherInterface
      */
     public function getMatcher();
     
     /**
-     * @param string $pathInfos
-     * @return RouteMatch|null
-     */
-    public function match($pathInfos = null);
-    
-    /**
      * @return GeneratorInterface
      */
     public function getGenerator();
-
+    
+    /**
+     * @param string $path
+     * @return RouteMatch|null
+     */
+    public function match($path);
+    
     /**
      * @param string $name
      * @param array $options

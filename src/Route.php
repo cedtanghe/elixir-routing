@@ -35,7 +35,12 @@ class Route
     /**
      * @var string
      */
-    const METHOD = '_method';
+    const METHODS = '_methods';
+    
+    /**
+     * @var string
+     */
+    const CONVERT = '_convert';
 
     /**
      * @var string
@@ -112,7 +117,7 @@ class Route
      * @param array $parameters
      * @param array $options
      */
-    public function __construct($pattern, $parameters = [], $options = [])
+    public function __construct($pattern, array $parameters = [], array $options = [])
     {
         $this->pattern = trim($pattern, '/');
         $this->replaceParameters($parameters);
@@ -188,7 +193,8 @@ class Route
             case self::QUERY_ALIAS:
                 if (!is_array($value))
                 {
-                    parse_str($value, $value);
+                    parse_str($value, $parsed);
+                    $value = $parsed;
                 }
                 
                 $this->parameters[self::QUERY] = $value;
@@ -333,13 +339,16 @@ class Route
      */
     public function setOption($key, $value)
     {
-        switch ($pKey) 
+        switch ($key) 
         {
+            case self::CONVERT:
+                $this->options[self::CONVERT] = (array)$value;
+                break;
             case self::SECURE:
                 $this->setSecure($value);
                 break;
             case self::METHOD:
-                $this->setMethod($value);
+                $this->setMethods($value);
                 break;
             case self::ATTRIBUTES:
             case self::ATTRIBUTES_ALIAS:
@@ -400,6 +409,23 @@ class Route
     }
     
     /**
+     * @param string $key
+     * @param mixed $converter
+     */
+    public function convert($key, $converter)
+    {
+        $this->options[self::CONVERT][] = $converter;
+    }
+    
+    /**
+     * @return array
+     */
+    public function getConverters()
+    {
+        return $this->getOption(self::CONVERT, []);
+    }
+    
+    /**
      * @param boolean $value
      */
     public function setSecure($value)
@@ -419,9 +445,9 @@ class Route
      * @param string|array $value
      * @throws \InvalidArgumentException
      */
-    public function setMethod($value)
+    public function setMethods($value)
     {
-        $methods = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE'];
+        $methods = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH'];
         $data = (array)$value;
         
         foreach($data as &$method)
@@ -438,7 +464,7 @@ class Route
     /**
      * @return array
      */
-    public function getMethod()
+    public function getMethods()
     {
         return $this->getOption(self::METHOD, []);
     }

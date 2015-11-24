@@ -12,8 +12,8 @@ interface MatcherInterface
 {
     /**
      * @param Collection $routes
-     * @param string $pathInfos
+     * @param string $path
      * @return RouteMatch|null
      */
-    public function match(Collection $routes, $pathInfos = null);
+    public function match(Collection $routes, $path);
 }

@@ -23,6 +23,16 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
      * @var boolean
      */
     protected $sorted = false;
+    
+    /**
+     * @var array
+     */
+    protected $decorators = [];
+    
+    /**
+     * @var boolean
+     */
+    protected $decorateForever = false;
 
     /**
      * @param string $name
@@ -57,7 +67,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     {
         $this->sorted = false;
         $this->routes[$name] = [
-            'route' => $route,
+            'route' => $this->decore($route),
             'priority' => $priority,
             'serial' => $this->serial++
         ];
@@ -140,49 +150,6 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     public function isSorted()
     {
         return $this->sorted;
-    }
-
-    /**
-     * @param Collection|array $collection
-     */
-    public function merge($pData)
-    {
-        if ($collection instanceof self) 
-        {
-            $collection = $pData->all(true);
-        }
-
-        if (count($collection) > 0) 
-        {
-            $this->sorted = false;
-
-            foreach ($collection as $name => $config)
-            {
-                $priority = 0;
-                $serial = 0;
-
-                if (is_array($config))
-                {
-                    $route = $config['route'];
-
-                    if (isset($config['priority']))
-                    {
-                        $priority = $config['priority'];
-                    }
-
-                    if (isset($config['serial'])) 
-                    {
-                        $serial = $config['serial'];
-                    }
-                }
-
-                $this->routes[$name] = [
-                    'route' => $route,
-                    'priority' => $priority,
-                    'serial' => ($this->_serial++) + $serial
-                ];
-            }
-        }
     }
     
     /**
@@ -269,16 +236,91 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     {
         return count($this->routes);
     }
-
+    
     /**
-     * @param string $method
-     * @param array $arguments
+     * @param Collection|array $collection
+     */
+    public function merge($collection)
+    {
+        if ($collection instanceof self) 
+        {
+            $collection = $collection->all(true);
+        }
+
+        if (count($collection) > 0) 
+        {
+            $this->sorted = false;
+
+            foreach ($collection as $name => $config)
+            {
+                $priority = 0;
+                $serial = 0;
+
+                if (is_array($config))
+                {
+                    $route = $config['route'];
+
+                    if (isset($config['priority']))
+                    {
+                        $priority = $config['priority'];
+                    }
+
+                    if (isset($config['serial'])) 
+                    {
+                        $serial = $config['serial'];
+                    }
+                }
+                else
+                {
+                    $route = $config;
+                }
+
+                $this->routes[$name] = [
+                    'route' => $this->decore($route),
+                    'priority' => $priority,
+                    'serial' => ($this->_serial++) + $serial
+                ];
+            }
+        }
+    }
+    
+    /**
+     * @param Route $route
+     * @return Route
+     */
+    protected function decore(Route $route)
+    {
+        foreach ($this->decorators as $method => $arguments)
+        {
+            call_user_func_array([$route, $method], $arguments);
+        }
+        
+        return $route;
+    }
+    
+    /**
+     * @return Collection
+     */
+    public function forever()
+    {
+        $this->decorateForever = true;
+        return $this;
+    }
+    
+    /**
+     * @ignore
      */
     public function __call($method, $arguments)
     {
         foreach ($this->routes as $config)
         {
             call_user_func_array([$config['route'], $method], $arguments);
+        }
+        
+        if ($this->decorateForever)
+        {
+            $this->decorators[][$method] = $arguments;
+            $this->decorateForever = false;
         }
     }
     
