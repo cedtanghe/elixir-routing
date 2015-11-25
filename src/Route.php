@@ -2,6 +2,8 @@
 
 namespace Elixir\Routing;
 
+use Elixir\Kernel\Middleware\MiddlewareInterface;
+
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
@@ -10,7 +12,27 @@ class Route
     /**
      * @var string
      */
+    const NAME = '_name';
+    
+    /**
+     * @var string
+     */
+    const NAME_ALIAS = 'as';
+    
+    /**
+     * @var string
+     */
+    const PRIORITY = '_priority';
+    
+    /**
+     * @var string
+     */
     const CALLABLE = '_callable';
+    
+    /**
+     * @var string
+     */
+    const MIDDLEWARES = '_middlewares';
     
     /**
      * @var string
@@ -96,6 +118,29 @@ class Route
      * @var string
      */
     const QUERY_ALIAS = '?';
+    
+    /**
+     * @param string $key
+     * @return boolean
+     */
+    public static function isValidOption($key)
+    {
+        return in_array($key, [
+            self::MIDDLEWARES,
+            self::CONVERT,
+            self::SECURE,
+            self::METHOD,
+            self::ATTRIBUTES,
+            self::ATTRIBUTES_ALIAS,
+            self::REPLACEMENTS,
+            self::REPLACEMENTS_ALIAS,
+            self::ASSERT,
+            self::GENERATE_FILTER,
+            self::MATCHED_FILTER,
+            self::PREFIX,
+            self::SUFFIX
+        ]);
+    }
 
     /**
      * @var string
@@ -250,7 +295,7 @@ class Route
         {
             $parts = explode('::', $callable);
 
-            if (count($parts) != 3)
+            if (count($parts) !== 3)
             {
                 throw new \InvalidArgumentException(sprintf('Parameter "%s" is not valid.', self::CALLABLE));
             }
@@ -282,6 +327,12 @@ class Route
      */
     public function setController($controller)
     {
+        if (is_string($controller) && count(explode('::', $controller)) === 3)
+        {
+            $this->setCallable($controller);
+            return;
+        }
+        
         $this->parameters[self::CONTROLLER] = $controller;
     }
     
@@ -336,13 +387,27 @@ class Route
     /**
      * @param string $key
      * @param mixed $value
+     * @throws \InvalidArgumentException
      */
     public function setOption($key, $value)
     {
         switch ($key) 
         {
             case self::CONVERT:
-                $this->options[self::CONVERT] = (array)$value;
+                $this->options[self::CONVERT] = [];
+                
+                foreach ($value as $k => $v)
+                {
+                    $this->convert($k, $v);
+                }
+                break;
+            case self::MIDDLEWARES:
+                $this->options[self::MIDDLEWARES] = [];
+                
+                foreach ($value as $middleware)
+                {
+                    $this->pipe($middleware);
+                }
                 break;
             case self::SECURE:
                 $this->setSecure($value);
@@ -374,7 +439,7 @@ class Route
                 $this->suffix($value);
                 break;
             default:
-                $this->options[$key] = $value;
+                throw new \InvalidArgumentException(sprintf('There is no option named "%s".', $key));
                 break;
         }
     }
@@ -423,6 +488,22 @@ class Route
     public function getConverters()
     {
         return $this->getOption(self::CONVERT, []);
+    }
+    
+    /**
+     * @param MiddlewareInterface $middleware
+     */
+    public function pipe(MiddlewareInterface $middleware)
+    {
+        $this->options[self::MIDDLEWARES][] = $middleware;
+    }
+    
+    /**
+     * @return array
+     */
+    public function getMiddlewares()
+    {
+        return $this->getOption(self::MIDDLEWARES, []);
     }
     
     /**

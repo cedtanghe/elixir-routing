@@ -327,6 +327,17 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     /**
      * @ignore
      */
+    public function __clone() 
+    {
+        $this->routes = [];
+        $this->decorateForever = false;
+        $this->serial = 0;
+        $this->sorted = false;
+    }
+
+    /**
+     * @ignore
+     */
     public function __debugInfo()
     {
         return $this->all(true);

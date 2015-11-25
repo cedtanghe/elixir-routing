@@ -7,7 +7,7 @@ use Elixir\Routing\Route;
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
-class RouteMatch 
+class RouteMatch implements \ArrayAccess, \Iterator, \Countable
 {
     /**
      * @var array 
@@ -126,5 +126,101 @@ class RouteMatch
     public function remove($key)
     {
         unset($this->params[$key]);
+    }
+    
+    /**
+     * @ignore
+     */
+    public function offsetExists($key)
+    {
+        return $this->has($key);
+    }
+
+    /**
+     * @ignore
+     */
+    public function offsetSet($key, $value) 
+    {
+        if (null === $key)
+        {
+            throw new \InvalidArgumentException('The key can not be undefined.');
+        }
+
+        $this->set($key, $value);
+    }
+
+    /**
+     * @ignore
+     */
+    public function offsetGet($key) 
+    {
+        return $this->get($key);
+    }
+
+    /**
+     * @ignore
+     */
+    public function offsetUnset($key)
+    {
+        $this->remove($key);
+    }
+
+    /**
+     * @ignore
+     */
+    public function rewind() 
+    {
+        return reset($this->params);
+    }
+
+    /**
+     * @ignore
+     */
+    public function current() 
+    {
+        return $this->get($this->key());
+    }
+
+    /**
+     * @ignore
+     */
+    public function key() 
+    {
+        return key($this->params);
+    }
+
+    /**
+     * @ignore
+     */
+    public function next()
+    {
+        return next($this->params);
+    }
+
+    /**
+     * @ignore
+     */
+    public function valid() 
+    {
+        return null !== $this->key();
+    }
+
+    /**
+     * @ignore
+     */
+    public function count()
+    {
+        return count($this->params);
+    }
+    
+    /**
+     * @ignore
+     */
+    public function __debugInfo()
+    {
+        return [
+            'name' => $this->routeName,
+            'parameters' => $this->params
+        ];
     }
 }

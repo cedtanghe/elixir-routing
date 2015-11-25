@@ -5,16 +5,14 @@ namespace Elixir\Routing;
 use Elixir\Routing\Collection;
 use Elixir\Routing\Generator\GeneratorInterface;
 use Elixir\Routing\Matcher\MatcherInterface;
+use Elixir\Routing\Route;
 use Elixir\Routing\RouterInterface;
-use Elixir\Routing\RouterUtilTrait;
 
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
 class Router implements RouterInterface 
 {
-    use RouterUtilTrait;
-    
     /**
      * @var MatcherInterface 
      */
@@ -66,6 +64,107 @@ class Router implements RouterInterface
     }
     
     /**
+     * @param string $pattern
+     * @param array|callable $config
+     */
+    public function get($pattern, $config)
+    {
+        $this->route($pattern, $config, ['GET', 'HEAD']);
+    }
+    
+    /**
+     * @param string $pattern
+     * @param array|callable $config
+     */
+    public function post($pattern, $config)
+    {
+        $this->route($pattern, $config, ['POST']);
+    }
+    
+    /**
+     * @param string $pattern
+     * @param array|callable $config
+     */
+    public function put($pattern, $config)
+    {
+        $this->route($pattern, $config, ['PUT']);
+    }
+    
+    /**
+     * @param string $pattern
+     * @param array|callable $config
+     */
+    public function delete($pattern, $config)
+    {
+        $this->route($pattern, $config, ['DELETE']);
+    }
+    
+    /**
+     * @param string $pattern
+     * @param array|callable $config
+     */
+    public function patch($pattern, $config)
+    {
+        $this->route($pattern, $config, ['PATCH']);
+    }
+    
+    /**
+     * @param string $pattern
+     * @param array|callable $config
+     */
+    public function any($pattern, $config)
+    {
+        $this->route($pattern, $config, ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH']);
+    }
+    
+    /**
+     * @param string $pattern
+     * @param array|callable $config
+     * @param array $methods
+     */
+    protected function route($pattern, $config, array $methods)
+    {
+        list($name, $parameters, $options, $priority) = $this->parseConfig($config);
+        
+        $name = $name ?: md5($pattern . '_' . $priority);
+        $options[Route::METHODS] = $methods;
+        
+        $this->addRoute($name, new Route($pattern, $parameters, $options), $priority);
+    }
+
+    /**
+     * @param callable $callable
+     */
+    public function group(callable $callable)
+    {
+        $current = $this->collection;
+        $this->collection = clone $this->collection;
+        
+        call_user_func_array($callback, [$this]);
+        
+        $current->merge($this->collection);
+        $this->collection = $current;
+    }
+    
+    /**
+     * @param string $name
+     * @param Route $route
+     * @param integer $priority
+     */
+    public function addRoute($name, Route $route, $priority = 0)
+    {
+        $this->collection->add($name, $route, $priority);
+    }
+    
+    /**
+     * @param Collection $collection
+     */
+    public function addCollection(Collection $collection)
+    {
+        $this->collection->merge($collection);
+    }
+    
+    /**
      * {@inheritdoc}
      * @throws \RuntimeException
      */
@@ -100,6 +199,69 @@ class Router implements RouterInterface
         }
         
         return $this->generator->generate($route, $options, $mode);
+    }
+    
+    /**
+     * @param array|callable $config
+     * @return array
+     * @throws \InvalidArgumentException
+     */
+    protected function parseConfig($config)
+    {
+        $name = null;
+        $parameters = [];
+        $options = [];
+        $priority = 0;
+        
+        if (is_array($callable))
+        {
+            foreach ($config as $key => $value)
+            {
+                if (is_int($key))
+                {
+                    $parameters[Route::CALLABLE] = $value;
+                }
+                else if ($key === self::NAME || $key === self::NAME_ALIAS)
+                {
+                    $name = $value;
+                }
+                else if ($key === self::PRIORITY)
+                {
+                    $priority = $value;
+                }
+                else if (Route::isValidOption($key))
+                {
+                    $options[$key] = $value;
+                }
+                else
+                {
+                    $parameters[$key] = $value;
+                }
+            }
+        }
+        else if (is_callable($callable))
+        {
+            $parameters[Route::CONTROLLER] = $callable;
+        }
+        else
+        {
+            throw new \InvalidArgumentException('Invalid configuration, must be an array or callable.');
+        }
+        
+        return [
+            'name' => $name,
+            'parameters' => $parameters,
+            'options' => $options,
+            'priority' => $priority
+        ];
+    }
+    
+    /**
+     * @ignore
+     */
+    public function __call($method, $arguments)
+    {
+        return call_user_func_array([$this->collection, $method], $arguments);
     }
     
     /**
