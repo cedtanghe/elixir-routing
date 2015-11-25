@@ -69,7 +69,13 @@ class Router implements RouterInterface
      */
     public function get($pattern, $config)
     {
-        $this->route($pattern, $config, ['GET', 'HEAD']);
+        if (!is_array($config))
+        {
+            $config = [$config];
+        }
+        
+        $config[Route::METHODS] = ['GET', 'HEAD'];
+        $this->route($pattern, $config);
     }
     
     /**
@@ -78,7 +84,13 @@ class Router implements RouterInterface
      */
     public function post($pattern, $config)
     {
-        $this->route($pattern, $config, ['POST']);
+        if (!is_array($config))
+        {
+            $config = [$config];
+        }
+        
+        $config[Route::METHODS] = ['POST'];
+        $this->route($pattern, $config);
     }
     
     /**
@@ -87,7 +99,13 @@ class Router implements RouterInterface
      */
     public function put($pattern, $config)
     {
-        $this->route($pattern, $config, ['PUT']);
+        if (!is_array($config))
+        {
+            $config = [$config];
+        }
+        
+        $config[Route::METHODS] = ['PUT'];
+        $this->route($pattern, $config);
     }
     
     /**
@@ -96,7 +114,13 @@ class Router implements RouterInterface
      */
     public function delete($pattern, $config)
     {
-        $this->route($pattern, $config, ['DELETE']);
+        if (!is_array($config))
+        {
+            $config = [$config];
+        }
+        
+        $config[Route::METHODS] = ['DELETE'];
+        $this->route($pattern, $config);
     }
     
     /**
@@ -105,7 +129,13 @@ class Router implements RouterInterface
      */
     public function patch($pattern, $config)
     {
-        $this->route($pattern, $config, ['PATCH']);
+        if (!is_array($config))
+        {
+            $config = [$config];
+        }
+        
+        $config[Route::METHODS] = ['PATCH'];
+        $this->route($pattern, $config);
     }
     
     /**
@@ -114,22 +144,28 @@ class Router implements RouterInterface
      */
     public function any($pattern, $config)
     {
-        $this->route($pattern, $config, ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH']);
+        if (!is_array($config))
+        {
+            $config = [$config];
+        }
+        
+        $config[Route::METHODS] = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH'];
+        $this->route($pattern, $config);
     }
     
     /**
      * @param string $pattern
      * @param array|callable $config
-     * @param array $methods
      */
-    protected function route($pattern, $config, array $methods)
+    public function route($pattern, $config)
     {
         list($name, $parameters, $options, $priority) = $this->parseConfig($config);
         
-        $name = $name ?: md5($pattern . '_' . $priority);
-        $options[Route::METHODS] = $methods;
-        
-        $this->addRoute($name, new Route($pattern, $parameters, $options), $priority);
+        $this->addRoute(
+            $name ?: md5($pattern . '_' . $priority), 
+            new Route($pattern, $parameters, $options), 
+            $priority
+        );
     }
 
     /**
