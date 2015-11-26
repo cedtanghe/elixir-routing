@@ -2,8 +2,6 @@
 
 namespace Elixir\Routing;
 
-use Elixir\Kernel\Middleware\MiddlewareInterface;
-
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
@@ -23,6 +21,11 @@ class Route
      * @var string
      */
     const PRIORITY = '_priority';
+    
+    /**
+     * @var string
+     */
+    const PRIORITY_ALIAS = '+';
     
     /**
      * @var string
@@ -62,7 +65,7 @@ class Route
     /**
      * @var string
      */
-    const CONVERT = '_convert';
+    const CONVERTERS = '_converters';
 
     /**
      * @var string
@@ -127,7 +130,7 @@ class Route
     {
         return in_array($key, [
             self::MIDDLEWARES,
-            self::CONVERT,
+            self::CONVERTERS,
             self::SECURE,
             self::METHOD,
             self::ATTRIBUTES,
@@ -393,8 +396,8 @@ class Route
     {
         switch ($key) 
         {
-            case self::CONVERT:
-                $this->options[self::CONVERT] = [];
+            case self::CONVERTERS:
+                $this->options[self::CONVERTERS] = [];
                 
                 foreach ($value as $k => $v)
                 {
@@ -479,7 +482,7 @@ class Route
      */
     public function convert($key, $converter)
     {
-        $this->options[self::CONVERT][] = $converter;
+        $this->options[self::CONVERTERS][] = $converter;
     }
     
     /**
@@ -487,13 +490,13 @@ class Route
      */
     public function getConverters()
     {
-        return $this->getOption(self::CONVERT, []);
+        return $this->getOption(self::CONVERTERS, []);
     }
     
     /**
-     * @param MiddlewareInterface $middleware
+     * @param callable $middleware
      */
-    public function pipe(MiddlewareInterface $middleware)
+    public function pipe(callable $middleware)
     {
         $this->options[self::MIDDLEWARES][] = $middleware;
     }

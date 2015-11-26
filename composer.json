@@ -11,8 +11,7 @@
     "repositories": [
     ],
     "require": {
-        "php": ">=5.4",
-        "elixir/elixir-http": "*"
+        "php": ">=5.4"
     },
     "require-dev": {
         "phpunit/PHPUnit": "~4.0"
@@ -28,6 +27,6 @@
         }
     },
     "suggest": {
-        "elixir/elixir-kernel": "*"
+        "elixir/elixir-http": "*"
     }
 }

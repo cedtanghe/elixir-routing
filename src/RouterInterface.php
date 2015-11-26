@@ -31,7 +31,7 @@ interface RouterInterface
      * @param string $path
      * @return RouteMatch|null
      */
-    public function match($path);
+    public function match($path = null);
     
     /**
      * @param string $name

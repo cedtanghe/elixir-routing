@@ -159,7 +159,7 @@ class Router implements RouterInterface
      */
     public function route($pattern, $config)
     {
-        list($name, $parameters, $options, $priority) = $this->parseConfig($config);
+        list($name, $parameters, $options, $priority) = $this->parseConfig($pattern, $config);
         
         $this->addRoute(
             $name ?: md5($pattern . '_' . $priority), 
@@ -238,11 +238,12 @@ class Router implements RouterInterface
     }
     
     /**
+     * @param string $pattern
      * @param array|callable $config
      * @return array
      * @throws \InvalidArgumentException
      */
-    protected function parseConfig($config)
+    protected function parseConfig($pattern, $config)
     {
         $name = null;
         $parameters = [];
@@ -261,11 +262,11 @@ class Router implements RouterInterface
                 {
                     $name = $value;
                 }
-                else if ($key === self::PRIORITY)
+                else if ($key === self::PRIORITY || $key === self::PRIORITY_ALIAS)
                 {
                     $priority = $value;
                 }
-                else if (Route::isValidOption($key))
+                else if (Route::isValidOption($key) || false !== strpos($pattern, '{' . $key . '}'))
                 {
                     $options[$key] = $value;
                 }
