@@ -2,7 +2,7 @@
 
 namespace Elixir\Routing\Generator;
 
-use Elixir\Routing\RequestContext;
+use Elixir\Routing\Request;
 use Elixir\Routing\Route;
 
 /**
@@ -21,9 +21,9 @@ interface GeneratorInterface
     const URL_ABSOLUTE = 'url_absolute';
     
     /**
-     * @return RequestContext
+     * @return Request
      */
-    public function getRequestContext();
+    public function getRequest();
     
     /**
      * @param Route $route

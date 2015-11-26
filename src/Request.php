@@ -8,11 +8,11 @@ use Elixir\HTTP\URI;
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
-class RequestContext
+class Request
 {
     /**
      * @param ServerRequest $request
-     * @return RequestContext
+     * @return Request
      */
     public static function fromServerRequest(ServerRequest $request)
     {
@@ -30,7 +30,7 @@ class RequestContext
     
     /**
      * @param URI $URI
-     * @return RequestContext
+     * @return Request
      */
     public static function fromURI(URI $URI)
     {

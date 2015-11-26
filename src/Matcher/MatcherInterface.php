@@ -4,7 +4,7 @@ namespace Elixir\Routing\Matcher;
 
 use Elixir\Routing\Collection;
 use Elixir\Routing\Matcher\RouteMatch;
-use Elixir\Routing\RequestContext;
+use Elixir\Routing\Request;
 
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
@@ -12,9 +12,9 @@ use Elixir\Routing\RequestContext;
 interface MatcherInterface 
 {
     /**
-     * @return RequestContext
+     * @return Request
      */
-    public function getRequestContext();
+    public function getRequest();
     
     /**
      * @param Collection $collection

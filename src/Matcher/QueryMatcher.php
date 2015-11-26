@@ -4,7 +4,7 @@ namespace Elixir\Routing\Matcher;
 
 use Elixir\Routing\Collection;
 use Elixir\Routing\Matcher\URLMatcher;
-use Elixir\Routing\RequestContext;
+use Elixir\Routing\Request;
 
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
@@ -18,9 +18,9 @@ class QueryMatcher extends URLMatcher
     protected $queryKey;
 
     /**
-     * @param RequestContext $request
+     * @param Request $request
      */
-    public function __construct(RequestContext $request, $queryKey = 'r')
+    public function __construct(Request $request, $queryKey = 'r')
     {
         $this->request = $request;
         $this->queryKey = $queryKey;

@@ -4,7 +4,7 @@ namespace Elixir\Routing\Matcher;
 
 use Elixir\Routing\Collection;
 use Elixir\Routing\Matcher\MatcherInterface;
-use Elixir\Routing\RequestContext;
+use Elixir\Routing\Request;
 use Elixir\Routing\Route;
 
 /**
@@ -18,7 +18,7 @@ class URLMatcher implements MatcherInterface
     const REGEX_SEPARATOR = '`';
     
     /**
-     * @var RequestContext 
+     * @var Request
      */
     protected $request;
     
@@ -28,9 +28,9 @@ class URLMatcher implements MatcherInterface
     protected $references = [];
     
     /**
-     * @param RequestContext $request
+     * @param Request $request
      */
-    public function __construct(RequestContext $request)
+    public function __construct(Request $request)
     {
         $this->request = $request;
     }
@@ -38,7 +38,7 @@ class URLMatcher implements MatcherInterface
     /**
      * {@inheritdoc}
      */
-    public function getRequestContext()
+    public function getRequest()
     {
         return $this->request;
     }
