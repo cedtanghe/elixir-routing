@@ -57,28 +57,19 @@ class URLGenerator implements GeneratorInterface
         
         $parseCallable = function($option) use ($parameters)
         {
-            if (is_callable($option))
+            $parts = explode('::', $option);
+
+            if (count($parts) === 3)
+            {
+                $parameters[Route::MODULE] = $part[0];
+                $parameters[Route::CONTROLLER] = $part[1];
+                $parameters[Route::ACTION] = $part[2];
+            }
+            else
             {
                 $parameters[Route::MODULE] = null;
                 $parameters[Route::CONTROLLER] = $option;
                 $parameters[Route::ACTION] = null;
-            }
-            else
-            {
-                $parts = explode('::', $option);
-
-                if (count($parts) === 3)
-                {
-                    $parameters[Route::MODULE] = $part[0];
-                    $parameters[Route::CONTROLLER] = $part[1];
-                    $parameters[Route::ACTION] = $part[2];
-                }
-                else
-                {
-                    $parameters[Route::MODULE] = null;
-                    $parameters[Route::CONTROLLER] = $option;
-                    $parameters[Route::ACTION] = null;
-                }
             }
         };
         
@@ -91,7 +82,7 @@ class URLGenerator implements GeneratorInterface
                     $parseCallable($option);
                     break;
                 case Route::CONTROLLER:
-                    if (is_string($option) && explode('::', $option) === 3)
+                    if (explode('::', $option) === 3)
                     {
                         $parseCallable($option);
                     }
