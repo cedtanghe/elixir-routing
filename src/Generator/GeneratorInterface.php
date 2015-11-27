@@ -21,6 +21,11 @@ interface GeneratorInterface
     const URL_ABSOLUTE = 'url_absolute';
     
     /**
+     * @var string
+     */
+    const SHEMA_RELATIVE = 'schema_relative';
+    
+    /**
      * @return Request
      */
     public function getRequest();
@@ -31,5 +36,5 @@ interface GeneratorInterface
      * @param string $mode
      * @return string
      */
-    public function generate(Route $route, array $options = [], $mode = GeneratorInterface::URL_RELATIVE);
+    public function generate(Route $route, array $options = [], $mode = self::URL_RELATIVE);
 }

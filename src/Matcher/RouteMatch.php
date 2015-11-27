@@ -95,7 +95,6 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
                 break;
             default:
                 $this->params[$key] = trim($value, '/');
-                break;
         }
     }
     

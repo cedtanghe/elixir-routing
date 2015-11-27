@@ -203,6 +203,20 @@ class Route
     }
     
     /**
+     * @param array|string $query
+     */
+    public function setQuery($query)
+    {
+        if (!is_array($query))
+        {
+            parse_str($query, $parsed);
+            $query = $parsed;
+        }
+        
+        $this->parameters[self::QUERY] = $query;
+    }
+
+    /**
      * @param string $key
      * @return boolean
      */
@@ -239,17 +253,10 @@ class Route
                 break;
             case self::QUERY:
             case self::QUERY_ALIAS:
-                if (!is_array($value))
-                {
-                    parse_str($value, $parsed);
-                    $value = $parsed;
-                }
-                
-                $this->parameters[self::QUERY] = $value;
+                $this->setQuery($value);
                 break;
             default:
                 $this->parameters[$key] = $value;
-                break;
         }
     }
     
@@ -443,7 +450,6 @@ class Route
                 break;
             default:
                 throw new \InvalidArgumentException(sprintf('There is no option named "%s".', $key));
-                break;
         }
     }
     
