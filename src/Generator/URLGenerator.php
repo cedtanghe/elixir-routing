@@ -65,16 +65,20 @@ class URLGenerator implements GeneratorInterface
             }
             else
             {
-                $parts = explode('::', $callable);
+                $parts = explode('::', $option);
 
-                if (count($parts) !== 3)
+                if (count($parts) === 3)
                 {
-                    throw new \InvalidArgumentException(sprintf('Parameter "%s" is not valid.', self::CALLABLE));
+                    $parameters[Route::MODULE] = $part[0];
+                    $parameters[Route::CONTROLLER] = $part[1];
+                    $parameters[Route::ACTION] = $part[2];
                 }
-
-                $parameters[Route::MODULE] = $part[0];
-                $parameters[Route::CONTROLLER] = $part[1];
-                $parameters[Route::ACTION] = $part[2];
+                else
+                {
+                    $parameters[Route::MODULE] = null;
+                    $parameters[Route::CONTROLLER] = $option;
+                    $parameters[Route::ACTION] = null;
+                }
             }
         };
         
@@ -84,10 +88,17 @@ class URLGenerator implements GeneratorInterface
             switch ($key)
             {
                 case Route::CALLABLE:
-                    $parts = explode('::', $option);
-                    $parameters[Route::MODULE] = $part[0];
-                    $parameters[Route::CONTROLLER] = $part[1];
-                    $parameters[Route::ACTION] = $part[2];
+                    $parseCallable($option);
+                    break;
+                case Route::CONTROLLER:
+                    if (is_string($option) && explode('::', $option) === 3)
+                    {
+                        $parseCallable($option);
+                    }
+                    else
+                    {
+                        $parameters[Route::CONTROLLER] = $option;
+                    }
                     break;
                 case Route::QUERY:
                 case Route::QUERY_ALIAS:
