@@ -54,6 +54,7 @@ class URLGenerator implements GeneratorInterface
         $authorizeAttributes = $route->hasOption(Route::ATTRIBUTES);
         $replacements = $route->getParameter(Route::REPLACEMENTS, []);
         $query = $route->getParameter(Route::QUERY, []);
+        $secure = $route->hasOption(Route::SECURE);
         
         $parseCallable = function($option) use ($parameters)
         {
@@ -104,6 +105,10 @@ class URLGenerator implements GeneratorInterface
                 case Route::REPLACEMENTS:
                 case Route::REPLACEMENTS_ALIAS:
                     $replacements = array_merge($replacements, $option);
+                    break;
+                case Route::SECURE:
+                case Route::SECURE_ALIAS:
+                    $secure = $option;
                     break;
                 default:
                     $parameters[$key] = $option;
@@ -174,7 +179,7 @@ class URLGenerator implements GeneratorInterface
             }
             else
             {
-                if ((isset($options[Route::SECURE]) && $options[Route::SECURE]) || $route->hasOption(Route::SECURE))
+                if ($secure)
                 {
                     $replace = 'https://';
                 }

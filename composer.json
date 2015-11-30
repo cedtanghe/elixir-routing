@@ -27,6 +27,7 @@
         }
     },
     "suggest": {
-        "elixir/elixir-http": "*"
+        "elixir/elixir-http": "*",
+        "elixir/elixir-config": "*"
     }
 }

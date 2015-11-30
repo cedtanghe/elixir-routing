@@ -2,9 +2,12 @@
 
 namespace Elixir\Routing;
 
+use Elixir\Config\Config;
+use Elixir\Config\Writer\WriterInterface;
 use Elixir\Routing\Collection;
 use Elixir\Routing\Generator\GeneratorInterface;
 use Elixir\Routing\Matcher\MatcherInterface;
+use Elixir\Routing\Parser;
 use Elixir\Routing\Route;
 use Elixir\Routing\RouterInterface;
 
@@ -27,6 +30,11 @@ class Router implements RouterInterface
      * @var Collection
      */
     protected $collection;
+    
+    /**
+     * @var Config; 
+     */
+    protected $config;
     
     /**
      * @param MatcherInterface $matcher
@@ -159,7 +167,7 @@ class Router implements RouterInterface
      */
     public function route($pattern, $config)
     {
-        list($name, $parameters, $options, $priority) = $this->parseConfig($pattern, $config);
+        list($name, $parameters, $options, $priority) = Parser::parseRoute($pattern, $config);
         
         $this->addRoute(
             $name ?: md5($pattern . '_' . $priority), 
@@ -201,14 +209,61 @@ class Router implements RouterInterface
     }
     
     /**
+     * @param Config|array $config
+     */
+    public function load($config)
+    {
+        if (is_array($config))
+        {
+            $this->addCollection(Parser::parse($config));
+        }
+        else
+        {
+            if (!$config instanceof Config)
+            {
+                $this->config = $this->config ?: new Config();
+                $this->config->replace([]);
+                $this->config->load($config);
+            }
+            else
+            {
+                $this->config = $config;
+            }
+            
+            $this->addCollection(Parser::parse($this->config->all()));
+        }
+    }
+    
+    /**
+     * @param WriterInterface $writer
+     * @param string $file
+     * @return boolean
+     */
+    public function export(WriterInterface $writer, $file)
+    {
+        $data = [];
+
+        foreach ($this->collection->all(true) as $name => $config)
+        {
+            $data[$name] = [
+                'parameters' => $config['parameters'],
+                'options' => $config['options'],
+                'priority' => $config['priority']
+            ];
+        }
+        
+        return $writer->export($data, $file);
+    }
+    
+    /**
      * {@inheritdoc}
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function match($path)
     {
         if(null === $this->matcher)
         {
-            throw new \RuntimeException('Matcher implementation is not defined.');
+            throw new RuntimeException('Matcher implementation is not defined.');
         }
         
         $pathInfos = trim($path, '/');
@@ -217,80 +272,24 @@ class Router implements RouterInterface
     
     /**
      * {@inheritdoc}
-     * @throws \RuntimeException
-     * @throws \InvalidArgumentException
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
      */
     public function generate($name, array $options = [], $mode = GeneratorInterface::URL_RELATIVE)
     {
         if(null === $this->generator)
         {
-            throw new \RuntimeException('Generator implementation is not defined.');
+            throw new RuntimeException('Generator implementation is not defined.');
         }
         
         $route = $this->collection->get($name);
         
         if(null === $route)
         {
-            throw new \InvalidArgumentException(sprintf('Route "%s" does not exist.', $name));
+            throw new InvalidArgumentException(sprintf('Route "%s" does not exist.', $name));
         }
         
         return $this->generator->generate($route, $options, $mode);
-    }
-    
-    /**
-     * @param string $pattern
-     * @param array|callable $config
-     * @return array
-     * @throws \InvalidArgumentException
-     */
-    protected function parseConfig($pattern, $config)
-    {
-        $name = null;
-        $parameters = [];
-        $options = [];
-        $priority = 0;
-        
-        if (is_array($callable))
-        {
-            foreach ($config as $key => $value)
-            {
-                if (is_int($key))
-                {
-                    $parameters[Route::CALLABLE] = $value;
-                }
-                else if ($key === self::NAME || $key === self::NAME_ALIAS)
-                {
-                    $name = $value;
-                }
-                else if ($key === self::PRIORITY || $key === self::PRIORITY_ALIAS)
-                {
-                    $priority = $value;
-                }
-                else if (Route::isValidOption($key) || false !== strpos($pattern, '{' . $key . '}'))
-                {
-                    $options[$key] = $value;
-                }
-                else
-                {
-                    $parameters[$key] = $value;
-                }
-            }
-        }
-        else if (is_callable($callable))
-        {
-            $parameters[Route::CONTROLLER] = $callable;
-        }
-        else
-        {
-            throw new \InvalidArgumentException('Invalid configuration, must be an array or callable.');
-        }
-        
-        return [
-            'name' => $name,
-            'parameters' => $parameters,
-            'options' => $options,
-            'priority' => $priority
-        ];
     }
     
     /**

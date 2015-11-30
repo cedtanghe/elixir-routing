@@ -10,7 +10,7 @@ class Route
     /**
      * @var string
      */
-    const NAME = '_name';
+    const NAME = 'name';
     
     /**
      * @var string
@@ -20,7 +20,7 @@ class Route
     /**
      * @var string
      */
-    const PRIORITY = '_priority';
+    const PRIORITY = 'priority';
     
     /**
      * @var string
@@ -30,72 +30,97 @@ class Route
     /**
      * @var string
      */
-    const CALLABLE = '_callable';
+    const PATTERN = 'pattern';
     
     /**
      * @var string
      */
-    const MIDDLEWARES = '_middlewares';
+    const PARAMETERS = 'parameters';
     
     /**
      * @var string
      */
-    const MODULE = '_module';
-
-    /**
-     * @var string
-     */
-    const CONTROLLER = '_controller';
-
-    /**
-     * @var string
-     */
-    const ACTION = '_action';
-
-    /**
-     * @var string
-     */
-    const SECURE = '_secure';
-
-    /**
-     * @var string
-     */
-    const METHODS = '_methods';
+    const OPTIONS = 'options';
     
     /**
      * @var string
      */
-    const CONVERTERS = '_converters';
+    const GLOBAL_CONFIG = 'global';
+    
+    /**
+     * @var string
+     */
+    const CALLABLE = 'callable';
+    
+    /**
+     * @var string
+     */
+    const MIDDLEWARES = 'middlewares';
+    
+    /**
+     * @var string
+     */
+    const MODULE = 'module';
 
     /**
      * @var string
      */
-    const ASSERT = '_assert';
+    const CONTROLLER = 'controller';
 
     /**
      * @var string
      */
-    const GENERATE_FILTER = '_generate_filter';
+    const ACTION = 'action';
 
     /**
      * @var string
      */
-    const MATCHED_FILTER = '_matched_filter';
+    const SECURE = 'secure';
+    
+    /**
+     * @var string
+     */
+    const SECURE_ALIAS = 'https';
 
     /**
      * @var string
      */
-    const PREFIX = '_prefix';
+    const METHODS = 'methods';
+    
+    /**
+     * @var string
+     */
+    const CONVERTERS = 'converters';
 
     /**
      * @var string
      */
-    const SUFFIX = '_suffix';
+    const ASSERT = 'assert';
 
     /**
      * @var string
      */
-    const REPLACEMENTS = '_replacements';
+    const GENERATE_FILTER = 'generate_filter';
+
+    /**
+     * @var string
+     */
+    const MATCHED_FILTER = 'matched_filter';
+
+    /**
+     * @var string
+     */
+    const PREFIX = 'prefix';
+
+    /**
+     * @var string
+     */
+    const SUFFIX = 'suffix';
+
+    /**
+     * @var string
+     */
+    const REPLACEMENTS = 'replacements';
 
     /**
      * @var string
@@ -105,7 +130,7 @@ class Route
     /**
      * @var string
      */
-    const ATTRIBUTES = '_attributes';
+    const ATTRIBUTES = 'attributes';
 
     /**
      * @var string
@@ -115,7 +140,7 @@ class Route
     /**
      * @var string
      */
-    const QUERY = '_query';
+    const QUERY = 'query';
 
     /**
      * @var string
@@ -124,14 +149,16 @@ class Route
     
     /**
      * @param string $key
+     * @param Route|string $pattern
      * @return boolean
      */
-    public static function isValidOption($key)
+    public static function isValidOption($key, $pattern = null)
     {
-        return in_array($key, [
+        $r = in_array($key, [
             self::MIDDLEWARES,
             self::CONVERTERS,
             self::SECURE,
+            self::SECURE_ALIAS,
             self::METHOD,
             self::ATTRIBUTES,
             self::ATTRIBUTES_ALIAS,
@@ -143,6 +170,14 @@ class Route
             self::PREFIX,
             self::SUFFIX
         ]);
+        
+        if (!$r && $pattern)
+        {
+            $pattern = $pattern instanceof self ? $route->getPattern() : $pattern;
+            return false !== strpos($pattern, '{' . $key . '}');
+        }
+        
+        return $r;
     }
 
     /**
@@ -420,6 +455,7 @@ class Route
                 }
                 break;
             case self::SECURE:
+            case self::SECURE_ALIAS:
                 $this->setSecure($value);
                 break;
             case self::METHOD:
