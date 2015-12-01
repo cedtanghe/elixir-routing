@@ -2,8 +2,7 @@
 
 namespace Elixir\Routing;
 
-use Elixir\Config\Config;
-use Elixir\Config\Writer\WriterInterface;
+use Elixir\Config\ConfigInterface;
 use Elixir\Routing\Collection;
 use Elixir\Routing\Generator\GeneratorInterface;
 use Elixir\Routing\Matcher\MatcherInterface;
@@ -30,11 +29,6 @@ class Router implements RouterInterface
      * @var Collection
      */
     protected $collection;
-    
-    /**
-     * @var Config; 
-     */
-    protected $config;
     
     /**
      * @param MatcherInterface $matcher
@@ -209,37 +203,21 @@ class Router implements RouterInterface
     }
     
     /**
-     * @param Config|array $config
+     * @param ConfigInterface $config
+     * @param string $key
      */
-    public function load($config)
+    public function fromConfig(ConfigInterface $config, $key = null)
     {
-        if (is_array($config))
-        {
-            $this->addCollection(Parser::parse($config));
-        }
-        else
-        {
-            if (!$config instanceof Config)
-            {
-                $this->config = $this->config ?: new Config();
-                $this->config->replace([]);
-                $this->config->load($config);
-            }
-            else
-            {
-                $this->config = $config;
-            }
-            
-            $this->addCollection(Parser::parse($this->config->all()));
-        }
+        $data = $key ? $config->get($key, []) : $config->all();
+        $this->addCollection(Parser::parse($data));
     }
     
     /**
-     * @param WriterInterface $writer
-     * @param string $file
-     * @return boolean
+     * @param ConfigInterface $config
+     * @param string $key
+     * @return ConfigInterface
      */
-    public function export(WriterInterface $writer, $file)
+    public function toConfig(ConfigInterface $config, $key = null)
     {
         $data = [];
 
@@ -252,7 +230,16 @@ class Router implements RouterInterface
             ];
         }
         
-        return $writer->export($data, $file);
+        if (null !== $key)
+        {
+            $config->set($key, $data);
+        }
+        else
+        {
+            $config->replace($data);
+        }
+        
+        return $config;
     }
     
     /**
