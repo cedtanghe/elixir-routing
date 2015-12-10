@@ -184,7 +184,7 @@ class URLMatcher implements MatcherInterface
     protected function createRouteMatch($name, Route $route, array $matches)
     {
         $match = new RouteMatch($name, $route->getParameters());
-        $converters = $route->getOption(Route::CONVERTERS);
+        $converters = $route->getConverters();
         
         foreach ($matches as $key => $value)
         {
@@ -199,6 +199,13 @@ class URLMatcher implements MatcherInterface
                 
                 $match->set($key, $value);
             }
+        }
+        
+        $middlewares = $route->getMiddlewares();
+        
+        if (count($route->getMiddlewares()) > 0)
+        {
+            $match->set(Route::MIDDLEWARES, $middlewares);
         }
         
         return $match;
