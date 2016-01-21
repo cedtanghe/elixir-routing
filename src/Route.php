@@ -110,11 +110,6 @@ class Route
     /**
      * @var string
      */
-    const SID = 'sid';
-    
-    /**
-     * @var string
-     */
     const PREFIX = 'prefix';
 
     /**

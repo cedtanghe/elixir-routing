@@ -52,15 +52,8 @@ class QueryGenerator extends URLGenerator
         }
         
         $query[$this->queryKey] = $path . $attributes;
-        $path = '';
         
-        if (isset($query[Route::SID]))
-        {
-            $path = '?' . $query[Route::SID];
-            unset($query[Route::SID]);
-        }
-        
-        $path .= (0 === strpos('?', $path) ? '&' : '?') . strtr(
+        $path = '?' . strtr(
             http_build_query($query),
             [
                 '%2F' => '/',
