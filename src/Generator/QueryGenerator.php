@@ -37,6 +37,8 @@ class QueryGenerator extends URLGenerator
      */
     protected function formatPath($path, array $attributes = [], array $query = [])
     {
+        $attributes = '';
+        
         if (count($attributes) > 0)
         {
             $str = '';
@@ -48,14 +50,17 @@ class QueryGenerator extends URLGenerator
             
             $attributes = $str;
         }
-        else
+        
+        $query[$this->queryKey] = $path . $attributes;
+        $path = '';
+        
+        if (isset($query[Route::SID]))
         {
-            $attributes = '';
+            $path = '?' . $query[Route::SID];
+            unset($query[Route::SID]);
         }
         
-        $query[$this->queryKey] = $path;
-        
-        $path = '?' . strtr(
+        $path .= (0 === strpos('?', $path) ? '&' : '?') . strtr(
             http_build_query($query),
             [
                 '%2F' => '/',
@@ -70,8 +75,6 @@ class QueryGenerator extends URLGenerator
                 '%7C' => '|'
             ]
         );
-        
-        $path .= $attributes;
         
         return $path;
     }

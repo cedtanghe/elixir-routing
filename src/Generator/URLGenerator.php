@@ -211,6 +211,8 @@ class URLGenerator implements GeneratorInterface
      */
     protected function formatPath($path, array $attributes = [], array $query = [])
     {
+        $attributes = '';
+        
         if (count($attributes) > 0)
         {
             $str = '';
@@ -222,18 +224,18 @@ class URLGenerator implements GeneratorInterface
             
             $attributes = $str;
         }
-        else
+        
+        $q = '';
+        
+        if (isset($query[Route::SID]))
         {
-            $attributes = '';
+            $q = '?' . $query[Route::SID];
+            unset($query[Route::SID]);
         }
         
         if (count($query) > 0)
         {
-            $query = '?' . http_build_query($query);
-        }
-        else
-        {
-            $query = '';
+            $q .= (0 === strpos('?', $q) ? '&' : '?') . http_build_query($query);
         }
         
         $path = strtr(
@@ -253,7 +255,7 @@ class URLGenerator implements GeneratorInterface
         );
         
         $path .= $attributes;
-        $path .= $query;
+        $path .= $q;
         
         return $path;
     }

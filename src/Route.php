@@ -106,7 +106,12 @@ class Route
      * @var string
      */
     const MATCHED_FILTER = 'matched_filter';
-
+    
+    /**
+     * @var string
+     */
+    const SID = 'sid';
+    
     /**
      * @var string
      */
