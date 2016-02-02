@@ -12,7 +12,7 @@ class Parser
 {
     /**
      * @param array $data
-     * @return Collection;
+     * @return Collection
      */
     public static function parse(array $data) 
     {
@@ -31,7 +31,11 @@ class Parser
             }
             
             $pattern = $config[Route::PATTERN];
-            list(, $parameters, $options, $priority) = Parser::parseRoute($pattern, $config);
+            
+            $parsed = Parser::parseRoute($pattern, $config);
+            $parameters = $parsed['parameters'];
+            $options = $parsed['options'];
+            $priority = $parsed['priority'];
         
             $collection->add(
                 $name, 
@@ -58,6 +62,8 @@ class Parser
                     }
                 }, $routes);
             }
+            
+            $collection->replace($routes);
         }
         
         return $collection;
