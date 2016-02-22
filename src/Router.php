@@ -5,8 +5,8 @@ namespace Elixir\Routing;
 use Elixir\Config\ConfigInterface;
 use Elixir\Routing\Collection;
 use Elixir\Routing\Generator\GeneratorInterface;
+use Elixir\Routing\LoadParser;
 use Elixir\Routing\Matcher\MatcherInterface;
-use Elixir\Routing\Parser;
 use Elixir\Routing\Route;
 use Elixir\Routing\RouterInterface;
 
@@ -161,7 +161,7 @@ class Router implements RouterInterface
      */
     public function route($pattern, $config)
     {
-        list($name, $parameters, $options, $priority) = Parser::parseRoute($pattern, $config);
+        list($name, $parameters, $options, $priority) = LoadParser::parseRoute($pattern, $config);
         
         $this->addRoute(
             $name ?: md5($pattern . '_' . $priority), 
@@ -209,7 +209,7 @@ class Router implements RouterInterface
     public function fromConfig(ConfigInterface $config, $key = null)
     {
         $data = $key ? $config->get($key, []) : $config->all();
-        $this->addCollection(Parser::parse($data));
+        $this->addCollection(LoadParser::parse($data));
     }
     
     /**
