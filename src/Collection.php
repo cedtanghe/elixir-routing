@@ -238,20 +238,17 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     }
     
     /**
-     * @param Collection|array $collection
+     * @param Collection $collection
      */
-    public function merge($collection)
+    public function merge(Collection $collection)
     {
-        if ($collection instanceof self) 
-        {
-            $collection = $collection->all(true);
-        }
+        $routes = $collection->all(true);
 
-        if (count($collection) > 0) 
+        if (count($routes) > 0) 
         {
             $this->sorted = false;
 
-            foreach ($collection as $name => $config)
+            foreach ($routes as $name => $config)
             {
                 $priority = 0;
                 $serial = 0;

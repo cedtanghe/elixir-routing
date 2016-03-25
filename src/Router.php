@@ -2,7 +2,9 @@
 
 namespace Elixir\Routing;
 
-use Elixir\Config\ConfigInterface;
+use Elixir\Config\Cache\CacheableInterface;
+use Elixir\Config\Loader\LoaderFactory;
+use Elixir\Config\Writer\WriterInterface;
 use Elixir\Routing\Collection;
 use Elixir\Routing\Generator\GeneratorInterface;
 use Elixir\Routing\LoadParser;
@@ -13,8 +15,13 @@ use Elixir\Routing\RouterInterface;
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
-class Router implements RouterInterface 
+class Router implements RouterInterface, CacheableInterface
 {
+    /**
+     * @var CacheableInterface 
+     */
+    protected $cache;
+    
     /**
      * @var MatcherInterface 
      */
@@ -63,6 +70,56 @@ class Router implements RouterInterface
     public function getGenerator()
     {
         return $this->generator;
+    }
+    
+    /**
+     * @param CacheableInterface $value
+     */
+    public function setCacheStrategy(CacheableInterface $value)
+    {
+        $this->cache = $value;
+    }
+    
+    /**
+     * @return CacheableInterface
+     */
+    public function getCacheStrategy()
+    {
+        return $this->cache;
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function loadCache()
+    {
+        if (null === $this->cache)
+        {
+            return false;
+        }
+        
+        $data = $this->cache->loadCache();
+        
+        if ($data)
+        {
+            $data = LoadParser::parse($data);
+            $this->addCollection($data);
+        }
+        
+        return $data;
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function cacheLoaded()
+    {
+        if (null === $this->cache)
+        {
+            return false;
+        }
+        
+        return $this->cache->cacheLoaded();
     }
     
     /**
@@ -203,43 +260,41 @@ class Router implements RouterInterface
     }
     
     /**
-     * @param ConfigInterface $config
-     * @param string $key
+     * {@inheritdoc}
      */
-    public function fromConfig(ConfigInterface $config, $key = null)
+    public function load($config, array $options = [])
     {
-        $data = $key ? $config->get($key, []) : $config->all();
-        $this->addCollection(LoadParser::parse($data));
+        if ($this->cacheLoaded())
+        {
+            return;
+        }
+        
+        if ($config instanceof self)
+        {
+            $this->addCollection($config->getCollection());
+        } 
+        else 
+        {
+            if (is_callable($config))
+            {
+                $data = call_user_func_array($config, [$this]);
+            }
+            else
+            {
+                $loader = LoaderFactory::create($config);
+                $data = $loader->load($config);
+            }
+            
+            $this->addCollection(LoadParser::parse($data));
+        }
     }
     
     /**
-     * @param ConfigInterface $config
-     * @param string $key
-     * @return ConfigInterface
+     * {@inheritdoc}
      */
-    public function toConfig(ConfigInterface $config, $key = null)
+    public function export(WriterInterface $writer, $file)
     {
-        $data = [];
-
-        foreach ($this->collection->all(true) as $name => $config)
-        {
-            $data[$name] = [
-                'parameters' => $config['parameters'],
-                'options' => $config['options'],
-                'priority' => $config['priority']
-            ];
-        }
-        
-        if (null !== $key)
-        {
-            $config->set($key, $data);
-        }
-        else
-        {
-            $config->replace($data);
-        }
-        
-        return $config;
+        return $writer->export($this->getExportableData(), $file);
     }
     
     /**
@@ -279,6 +334,69 @@ class Router implements RouterInterface
         return $this->generator->generate($route, $options, $mode);
     }
     
+    /**
+     * @return boolean
+     */
+    public function isFreshCache()
+    {
+        if (null === $this->cache)
+        {
+            return false;
+        }
+        
+        return $this->cache->isFreshCache();
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function exportToCache(array $data = null)
+    {
+        if (null === $this->cache)
+        {
+            return false;
+        }
+        
+        if ($data)
+        {
+            $this->addCollection(LoadParser::parse($data));
+        }
+        
+        return $this->cache->exportToCache($this->getExportableData());
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateCache()
+    {
+        if (null === $this->cache)
+        {
+            return false;
+        }
+        
+        return $this->cache->invalidateCache();
+    }
+    
+    /**
+     * @return array
+     */
+    protected function getExportableData()
+    {
+        $data = [];
+
+        foreach ($this->collection->all(true) as $name => $config)
+        {
+            $data[$name] = [
+                'parameters' => $config['parameters'],
+                'options' => $config['options'],
+                'priority' => $config['priority']
+            ];
+        }
+        
+        return $data;
+    }
+
     /**
      * @ignore
      */
