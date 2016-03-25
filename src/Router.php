@@ -4,6 +4,7 @@ namespace Elixir\Routing;
 
 use Elixir\Config\Cache\CacheableInterface;
 use Elixir\Config\Loader\LoaderFactory;
+use Elixir\Config\Loader\LoaderFactoryAwareTrait;
 use Elixir\Config\Writer\WriterInterface;
 use Elixir\Routing\Collection;
 use Elixir\Routing\Generator\GeneratorInterface;
@@ -17,6 +18,8 @@ use Elixir\Routing\RouterInterface;
  */
 class Router implements RouterInterface, CacheableInterface
 {
+    use LoaderFactoryAwareTrait;
+    
     /**
      * @var CacheableInterface 
      */
@@ -281,7 +284,13 @@ class Router implements RouterInterface, CacheableInterface
             }
             else
             {
-                $loader = LoaderFactory::create($config);
+                if (null === $this->loaderFactory)
+                {
+                    $this->loaderFactory = new LoaderFactory();
+                    LoaderFactory::addDefaultLoaders($this->loaderFactory);
+                }
+                
+                $loader = $this->loaderFactory->create($config);
                 $data = $loader->load($config);
             }
             
