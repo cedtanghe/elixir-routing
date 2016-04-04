@@ -287,10 +287,10 @@ class Router implements RouterInterface, CacheableInterface
                 if (null === $this->loaderFactory)
                 {
                     $this->loaderFactory = new LoaderFactory();
-                    LoaderFactory::addDefaultLoaders($this->loaderFactory);
+                    LoaderFactory::addLoaderProvider($this->loaderFactory);
                 }
                 
-                $loader = $this->loaderFactory->create($config);
+                $loader = $this->loaderFactory->create($config, $options);
                 $data = $loader->load($config);
             }
             
