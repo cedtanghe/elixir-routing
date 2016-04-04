@@ -267,7 +267,7 @@ class Router implements RouterInterface, CacheableInterface
      */
     public function load($config, array $options = [])
     {
-        if ($this->cacheLoaded())
+        if ($this->cacheLoaded() && $this->isFreshCache())
         {
             return;
         }
@@ -344,7 +344,7 @@ class Router implements RouterInterface, CacheableInterface
     }
     
     /**
-     * @return boolean
+     * {@inheritdoc}
      */
     public function isFreshCache()
     {
