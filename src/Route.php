@@ -80,6 +80,11 @@ class Route
     /**
      * @var string
      */
+    const HOST = 'host';
+    
+    /**
+     * @var string
+     */
     const SECURE_ALIAS = 'https';
 
     /**
@@ -157,6 +162,7 @@ class Route
         $r = in_array($key, [
             self::MIDDLEWARES,
             self::CONVERTERS,
+            self::HOST,
             self::SECURE,
             self::SECURE_ALIAS,
             self::METHOD,
@@ -454,6 +460,9 @@ class Route
                     $this->pipe($middleware);
                 }
                 break;
+            case self::HOST:
+                $this->setHost($value);
+                break;
             case self::SECURE:
             case self::SECURE_ALIAS:
                 $this->setSecure($value);
@@ -552,6 +561,22 @@ class Route
     }
     
     /**
+     * @param string $value
+     */
+    public function setHost($value)
+    {
+        $this->options[self::HOST] = $value;
+    }
+    
+    /**
+     * @return string|null
+     */
+    public function getHost($value)
+    {
+        return $this->getOption(self::HOST);
+    }
+    
+    /**
      * @param boolean $value
      */
     public function setSecure($value)
@@ -596,7 +621,7 @@ class Route
     }
     
     /**
-     * @param boolean $pValue
+     * @param boolean $value
      */
     public function setUseAttributes($value)
     {

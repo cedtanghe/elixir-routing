@@ -308,36 +308,36 @@ class Router implements RouterInterface, CacheableInterface
     
     /**
      * {@inheritdoc}
-     * @throws RuntimeException
+     * @throws \RuntimeException
      */
     public function match($path)
     {
         if(null === $this->matcher)
         {
-            throw new RuntimeException('Matcher implementation is not defined.');
+            throw new \RuntimeException('Matcher implementation is not defined.');
         }
         
-        $pathInfos = trim($path, '/');
-        return $this->matcher->match($this->collection, $pathInfos);
+        $path = trim($path, '/');
+        return $this->matcher->match($this->collection, $path);
     }
     
     /**
      * {@inheritdoc}
-     * @throws RuntimeException
-     * @throws InvalidArgumentException
+     * @throws \RuntimeException
+     * @throws \InvalidArgumentException
      */
     public function generate($name, array $options = [], $mode = GeneratorInterface::URL_RELATIVE)
     {
         if(null === $this->generator)
         {
-            throw new RuntimeException('Generator implementation is not defined.');
+            throw new \RuntimeException('Generator implementation is not defined.');
         }
         
         $route = $this->collection->get($name);
         
         if(null === $route)
         {
-            throw new InvalidArgumentException(sprintf('Route "%s" does not exist.', $name));
+            throw new \InvalidArgumentException(sprintf('Route "%s" does not exist.', $name));
         }
         
         return $this->generator->generate($route, $options, $mode);

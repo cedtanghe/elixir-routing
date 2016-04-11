@@ -57,6 +57,14 @@ class URLMatcher implements MatcherInterface
         
         foreach ($collection as $name => $route)
         {
+            // Host
+            $host = $route->getOption(Route::HOST, null);
+            
+            if ($host && $host !== $this->request->getHost())
+            {
+                continue;
+            }
+            
             // Methods
             $methods = $route->getOption(Route::METHODS, []);
             
@@ -130,6 +138,7 @@ class URLMatcher implements MatcherInterface
             {
                 case Route::MIDDLEWARES:
                 case Route::CONVERTERS:
+                case Route::HOST:
                 case Route::SECURE:
                 case Route::METHODS:
                 case Route::ASSERT:

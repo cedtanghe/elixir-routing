@@ -16,10 +16,29 @@ class Request
      */
     public static function fromServerRequest(ServerRequest $request)
     {
+        $getHost = function($request)
+        {
+            if (method_exists('getHost', $request))
+            {
+                return $request->getHost();
+            }
+            
+            if (!$host = $request->getServerParam('HOST'))
+            {
+                if (!$host = $request->getServerParam('SERVER_NAME'))
+                {
+                    $host = $request->getServerParam('SERVER_ADDR', '');
+                }
+            }
+
+            return strtolower(preg_replace('/:\d+$/', '', trim($host)));
+        };
+        
         $config = [
             'base_url' => $request->getBaseURL(),
             'method' => $request->getMethod(),
             'scheme' => $request->getScheme(),
+            'host' => $getHost($request),
             'path_info' => $request->getPathInfo(),
             'query_string' => $request->getServer('QUERY_STRING', ''),
             'parameters' => $request->getAttributes() + ['_request' => $request]
@@ -38,6 +57,7 @@ class Request
             'base_url' => URI::buildURIString(['scheme' => $URI->getScheme(), 'authority' => $URI->getAuthority()]),
             'method' => 'GET',
             'scheme' => $URI->getScheme(),
+            'host' => $URI->getHost(),
             'path_info' => $URI->getPath(),
             'query_string' => $URI->getQuery() ?: '',
             'parameters' => ['_uri' => $URI]
@@ -64,6 +84,11 @@ class Request
     /**
      * @var string
      */
+    protected $host;
+    
+    /**
+     * @var string
+     */
     protected $pathInfo;
     
     /**
@@ -85,6 +110,7 @@ class Request
             'base_url' => '',
             'method' => 'GET',
             'scheme' => 'http',
+            'host' => '',
             'path_info' => '/',
             'query_string' => '',
             'parameters' => []
@@ -93,6 +119,7 @@ class Request
         $this->baseURL = $config['base_url'];
         $this->method = $config['method'];
         $this->scheme = $config['scheme'];
+        $this->host = $config['host'];
         $this->pathInfo = $config['path_info'];
         $this->queryString = $config['query_string'];
         $this->parameters = $config['parameters'];
@@ -136,6 +163,14 @@ class Request
     public function getQueryString()
     {
         return $this->queryString;
+    }
+    
+    /**
+     * @return string
+     */
+    public function getHost()
+    {
+        return $this->getHost();
     }
     
     /**
