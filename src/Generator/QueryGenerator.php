@@ -2,19 +2,18 @@
 
 namespace Elixir\Routing\Generator;
 
-use Elixir\Routing\Generator\URLGenerator;
 use Elixir\Routing\Request;
 
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
-class QueryGenerator extends URLGenerator 
+class QueryGenerator extends URLGenerator
 {
     /**
-     * @var string 
+     * @var string
      */
     protected $queryKey;
-    
+
     /**
      * @param Request $request
      */
@@ -23,7 +22,7 @@ class QueryGenerator extends URLGenerator
         $this->queryKey = $queryKey;
         parent::__construct($request);
     }
-    
+
     /**
      * @return string
      */
@@ -31,29 +30,27 @@ class QueryGenerator extends URLGenerator
     {
         return $this->queryKey;
     }
-    
+
     /**
      * {@inheritdoc}
      */
     protected function formatPath($path, array $attributes = [], array $query = [])
     {
         $attributes = '';
-        
-        if (count($attributes) > 0)
-        {
+
+        if (count($attributes) > 0) {
             $str = '';
-            
-            foreach ($attributes as $key => $value)
-            {
-                $str .= '/' . $key . '/' . rawurlencode($value);
+
+            foreach ($attributes as $key => $value) {
+                $str .= '/'.$key.'/'.rawurlencode($value);
             }
-            
+
             $attributes = $str;
         }
-        
-        $query[$this->queryKey] = $path . $attributes;
-        
-        $path = '?' . strtr(
+
+        $query[$this->queryKey] = $path.$attributes;
+
+        $path = '?'.strtr(
             http_build_query($query),
             [
                 '%2F' => '/',
@@ -65,10 +62,10 @@ class QueryGenerator extends URLGenerator
                 '%2B' => '+',
                 '%21' => '!',
                 '%2A' => '*',
-                '%7C' => '|'
+                '%7C' => '|',
             ]
         );
-        
+
         return $path;
     }
 }

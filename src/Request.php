@@ -12,28 +12,25 @@ class Request
 {
     /**
      * @param ServerRequest $request
+     *
      * @return Request
      */
     public static function fromServerRequest(ServerRequest $request)
     {
-        $getHost = function($request)
-        {
-            if (method_exists('getHost', $request))
-            {
+        $getHost = function ($request) {
+            if (method_exists('getHost', $request)) {
                 return $request->getHost();
             }
-            
-            if (!$host = $request->getServerParam('HOST'))
-            {
-                if (!$host = $request->getServerParam('SERVER_NAME'))
-                {
+
+            if (!$host = $request->getServerParam('HOST')) {
+                if (!$host = $request->getServerParam('SERVER_NAME')) {
                     $host = $request->getServerParam('SERVER_ADDR', '');
                 }
             }
 
             return strtolower(preg_replace('/:\d+$/', '', trim($host)));
         };
-        
+
         $config = [
             'base_url' => $request->getBaseURL(),
             'method' => $request->getMethod(),
@@ -41,14 +38,15 @@ class Request
             'host' => $getHost($request),
             'path_info' => $request->getPathInfo(),
             'query_string' => $request->getServer('QUERY_STRING', ''),
-            'parameters' => $request->getAttributes() + ['_request' => $request]
+            'parameters' => $request->getAttributes() + ['_request' => $request],
         ];
-        
+
         return new static($config);
     }
-    
+
     /**
      * @param URI $URI
+     *
      * @return Request
      */
     public static function fromURI(URI $URI)
@@ -60,42 +58,42 @@ class Request
             'host' => $URI->getHost(),
             'path_info' => $URI->getPath(),
             'query_string' => $URI->getQuery() ?: '',
-            'parameters' => ['_uri' => $URI]
+            'parameters' => ['_uri' => $URI],
         ];
-        
+
         return new static($config);
     }
-    
+
     /**
      * @var string
      */
     protected $baseURL;
-    
+
     /**
      * @var string
      */
     protected $method;
-    
+
     /**
      * @var string
      */
     protected $scheme;
-    
+
     /**
      * @var string
      */
     protected $host;
-    
+
     /**
      * @var string
      */
     protected $pathInfo;
-    
+
     /**
      * @var string
      */
     protected $queryString;
-    
+
     /**
      * @var array
      */
@@ -113,9 +111,9 @@ class Request
             'host' => '',
             'path_info' => '/',
             'query_string' => '',
-            'parameters' => []
+            'parameters' => [],
         ];
-        
+
         $this->baseURL = $config['base_url'];
         $this->method = $config['method'];
         $this->scheme = $config['scheme'];
@@ -124,15 +122,15 @@ class Request
         $this->queryString = $config['query_string'];
         $this->parameters = $config['parameters'];
     }
-    
+
     /**
-     * @return string 
+     * @return string
      */
     public function getBaseURL()
     {
         return $this->baseURL;
     }
-    
+
     /**
      * @return string
      */
@@ -140,31 +138,31 @@ class Request
     {
         return $this->method;
     }
-    
+
     /**
-     * @return string 
+     * @return string
      */
     public function getScheme()
     {
         return $this->scheme;
     }
-    
+
     /**
-     * @return string 
+     * @return string
      */
     public function getPathInfo()
     {
         return $this->pathInfo;
     }
-    
+
     /**
-     * @return string 
+     * @return string
      */
     public function getQueryString()
     {
         return $this->queryString;
     }
-    
+
     /**
      * @return string
      */
@@ -172,38 +170,37 @@ class Request
     {
         return $this->getHost();
     }
-    
+
     /**
-     * @return boolean 
+     * @return bool
      */
     public function isSecure()
     {
         return $this->getScheme() === 'https';
     }
-    
+
     /**
-     * @return string 
+     * @return string
      */
     public function getURL()
     {
         $url = rtrim($this->getBaseURL(), '/');
-        
-        if (!empty($this->getPathInfo()))
-        {
-            $url .= '/' . ltrim($this->getPathInfo(), '/');
+
+        if (!empty($this->getPathInfo())) {
+            $url .= '/'.ltrim($this->getPathInfo(), '/');
         }
-        
-        if (!empty($this->getQueryString()))
-        {
-            $url .= '?' . $this->getQueryString();
+
+        if (!empty($this->getQueryString())) {
+            $url .= '?'.$this->getQueryString();
         }
-        
+
         return $url;
     }
-    
+
     /**
      * @param string $key
-     * @return boolean
+     *
+     * @return bool
      */
     public function hasParameter($key)
     {
@@ -212,19 +209,19 @@ class Request
 
     /**
      * @param string $key
-     * @param mixed $default
+     * @param mixed  $default
+     *
      * @return mixed
      */
     public function getParameter($key, $default = null)
     {
-        if ($this->hasParameter($key)) 
-        {
+        if ($this->hasParameter($key)) {
             return $this->parameters[$key];
         }
 
         return is_callable($default) ? call_user_func($default) : $default;
     }
-    
+
     /**
      * @return array
      */
@@ -232,21 +229,18 @@ class Request
     {
         return $this->parameters;
     }
-    
+
     /**
      * @ignore
      */
-    public function __call($method, $arguments) 
+    public function __call($method, $arguments)
     {
-        if ($this->hasParameter('_request'))
-        {
+        if ($this->hasParameter('_request')) {
             return call_user_func_array($this->parameters['_request'], $arguments);
-        }
-        else if ($this->hasParameter('_uri'))
-        {
+        } elseif ($this->hasParameter('_uri')) {
             return call_user_func_array($this->parameters['_uri'], $arguments);
         }
-        
+
         throw new \BadMethodCallException(sprintf('Method "%s" is undefined.'));
     }
 }

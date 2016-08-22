@@ -10,7 +10,7 @@ use Elixir\Routing\Route;
 class RouteMatch implements \ArrayAccess, \Iterator, \Countable
 {
     /**
-     * @var array 
+     * @var array
      */
     protected $params = [];
 
@@ -21,7 +21,7 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
 
     /**
      * @param string $routeName
-     * @param array $params
+     * @param array  $params
      */
     public function __construct($routeName, array $params = [])
     {
@@ -32,14 +32,15 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
     /**
      * @return string
      */
-    public function getRouteName() 
+    public function getRouteName()
     {
         return $this->routeName;
     }
-    
+
     /**
      * @param string $key
-     * @return boolean
+     *
+     * @return bool
      */
     public function has($key)
     {
@@ -48,13 +49,13 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
 
     /**
      * @param string $key
-     * @param mixed $default
+     * @param mixed  $default
+     *
      * @return mixed
      */
     public function get($key, $default = null)
     {
-        if ($this->has($key)) 
-        {
+        if ($this->has($key)) {
             return $this->params[$key];
         }
 
@@ -63,30 +64,24 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
 
     /**
      * @param string $key
-     * @param mixed $value
+     * @param mixed  $value
      */
     public function set($key, $value)
     {
-        switch ($key) 
-        {
+        switch ($key) {
             case Route::ATTRIBUTES:
                 $params = explode('/', trim($value, '/'));
                 $n = count($params);
 
-                if ($n > 0) 
-                {
-                    if ($n % 2 == 1) 
-                    {
+                if ($n > 0) {
+                    if ($n % 2 == 1) {
                         $params[] = '';
-                        $n++;
+                        ++$n;
                     }
 
-                    for ($i = 0; $i < $n; ++$i)
-                    {
-                        if (preg_match('/^[a-z0-9-_]+$/i', $params[$i])) 
-                        {
-                            if (!$this->has($params[$i]))
-                            {
+                    for ($i = 0; $i < $n; ++$i) {
+                        if (preg_match('/^[a-z0-9-_]+$/i', $params[$i])) {
+                            if (!$this->has($params[$i])) {
                                 $this->set($params[$i], rawurldecode($params[++$i]));
                             }
                         }
@@ -97,7 +92,7 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
                 $this->params[$key] = trim($value, '/');
         }
     }
-    
+
     /**
      * @return array
      */
@@ -105,7 +100,7 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
     {
         return $this->params;
     }
-    
+
     /**
      * @param array $data
      */
@@ -113,12 +108,11 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
     {
         $this->params = [];
 
-        foreach ($data as $key => $value)
-        {
+        foreach ($data as $key => $value) {
             $this->set($key, $value);
         }
     }
-    
+
     /**
      * @param string $key
      */
@@ -126,7 +120,7 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
     {
         unset($this->params[$key]);
     }
-    
+
     /**
      * @ignore
      */
@@ -138,10 +132,9 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
     /**
      * @ignore
      */
-    public function offsetSet($key, $value) 
+    public function offsetSet($key, $value)
     {
-        if (null === $key)
-        {
+        if (null === $key) {
             throw new \InvalidArgumentException('The key can not be undefined.');
         }
 
@@ -151,7 +144,7 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
     /**
      * @ignore
      */
-    public function offsetGet($key) 
+    public function offsetGet($key)
     {
         return $this->get($key);
     }
@@ -167,7 +160,7 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
     /**
      * @ignore
      */
-    public function rewind() 
+    public function rewind()
     {
         return reset($this->params);
     }
@@ -175,7 +168,7 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
     /**
      * @ignore
      */
-    public function current() 
+    public function current()
     {
         return $this->get($this->key());
     }
@@ -183,7 +176,7 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
     /**
      * @ignore
      */
-    public function key() 
+    public function key()
     {
         return key($this->params);
     }
@@ -199,7 +192,7 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
     /**
      * @ignore
      */
-    public function valid() 
+    public function valid()
     {
         return null !== $this->key();
     }
@@ -211,7 +204,7 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
     {
         return count($this->params);
     }
-    
+
     /**
      * @ignore
      */
@@ -219,7 +212,7 @@ class RouteMatch implements \ArrayAccess, \Iterator, \Countable
     {
         return [
             'name' => $this->routeName,
-            'parameters' => $this->params
+            'parameters' => $this->params,
         ];
     }
 }

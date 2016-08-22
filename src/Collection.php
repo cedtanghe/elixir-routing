@@ -2,8 +2,6 @@
 
 namespace Elixir\Routing;
 
-use Elixir\Routing\Route;
-
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
@@ -15,43 +13,44 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     protected $routes = [];
 
     /**
-     * @var integer
+     * @var int
      */
     protected $serial = 0;
 
     /**
-     * @var boolean
+     * @var bool
      */
     protected $sorted = false;
-    
+
     /**
      * @var array
      */
     protected $decorators = [];
-    
+
     /**
-     * @var boolean
+     * @var bool
      */
     protected $decorateForever = false;
 
     /**
      * @param string $name
-     * @return boolean
+     *
+     * @return bool
      */
-    public function has($name) 
+    public function has($name)
     {
         return isset($this->routes[$name]);
     }
 
     /**
      * @param string $name
-     * @param mixed $default
+     * @param mixed  $default
+     *
      * @return mixed
      */
-    public function get($name, $default = null) 
+    public function get($name, $default = null)
     {
-        if ($this->has($name)) 
-        {
+        if ($this->has($name)) {
             return $this->routes[$name]['route'];
         }
 
@@ -60,37 +59,37 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
 
     /**
      * @param string $name
-     * @param Route $route
-     * @param integer $priority
+     * @param Route  $route
+     * @param int    $priority
      */
-    public function add($name, Route $route, $priority = 0) 
+    public function add($name, Route $route, $priority = 0)
     {
         $this->sorted = false;
         $this->routes[$name] = [
             'route' => $this->decore($route),
             'priority' => $priority,
-            'serial' => $this->serial++
+            'serial' => $this->serial++,
         ];
     }
 
     /**
      * @param string $name
      */
-    public function remove($name) 
+    public function remove($name)
     {
         unset($this->routes[$name]);
     }
 
     /**
-     * @param boolean $withInfos
+     * @param bool $withInfos
+     *
      * @return array
      */
     public function all($withInfos = false)
     {
         $routes = [];
 
-        foreach ($this->routes as $key => $value)
-        {
+        foreach ($this->routes as $key => $value) {
             $routes[$key] = $withInfos ? $value : $value['route'];
         }
 
@@ -105,16 +104,13 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
         $this->routes = [];
         $this->serial = 0;
 
-        foreach ($routes as $name => $route)
-        {
+        foreach ($routes as $name => $route) {
             $priority = 0;
 
-            if (is_array($route))
-            {
+            if (is_array($route)) {
                 $route = $route['route'];
 
-                if (isset($route['priority'])) 
-                {
+                if (isset($route['priority'])) {
                     $priority = $route['priority'];
                 }
             }
@@ -122,36 +118,30 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
             $this->add($name, $route, $priority);
         }
     }
-    
-    /**
-     * @return void
-     */
-    public function sort() 
+
+    public function sort()
     {
-        if (!$this->sorted)
-        {
-            uasort($this->routes, function (array $p1, array $p2)
-            {
-                if ($p1['priority'] === $p2['priority']) 
-                {
+        if (!$this->sorted) {
+            uasort($this->routes, function (array $p1, array $p2) {
+                if ($p1['priority'] === $p2['priority']) {
                     return ($p1['serial'] < $p2['serial']) ? -1 : 1;
                 }
 
                 return ($p1['priority'] > $p2['priority']) ? -1 : 1;
             });
-        
+
             $this->sorted = true;
         }
     }
-    
+
     /**
-     * @return boolean
+     * @return bool
      */
     public function isSorted()
     {
         return $this->sorted;
     }
-    
+
     /**
      * @ignore
      */
@@ -163,10 +153,9 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     /**
      * @ignore
      */
-    public function offsetSet($key, $value) 
+    public function offsetSet($key, $value)
     {
-        if (null === $key)
-        {
+        if (null === $key) {
             throw new \InvalidArgumentException('The key can not be undefined.');
         }
 
@@ -176,7 +165,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     /**
      * @ignore
      */
-    public function offsetGet($key) 
+    public function offsetGet($key)
     {
         return $this->get($key);
     }
@@ -192,7 +181,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     /**
      * @ignore
      */
-    public function rewind() 
+    public function rewind()
     {
         return reset($this->routes);
     }
@@ -200,7 +189,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     /**
      * @ignore
      */
-    public function current() 
+    public function current()
     {
         return $this->get($this->key());
     }
@@ -208,7 +197,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     /**
      * @ignore
      */
-    public function key() 
+    public function key()
     {
         return key($this->routes);
     }
@@ -220,11 +209,11 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     {
         return next($this->routes);
     }
-    
+
     /**
      * @ignore
      */
-    public function valid() 
+    public function valid()
     {
         return null !== $this->key();
     }
@@ -236,7 +225,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     {
         return count($this->routes);
     }
-    
+
     /**
      * @param Collection $collection
      */
@@ -244,87 +233,79 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     {
         $routes = $collection->all(true);
 
-        if (count($routes) > 0) 
-        {
+        if (count($routes) > 0) {
             $this->sorted = false;
 
-            foreach ($routes as $name => $config)
-            {
+            foreach ($routes as $name => $config) {
                 $priority = 0;
                 $serial = 0;
 
-                if (is_array($config))
-                {
+                if (is_array($config)) {
                     $route = $config['route'];
 
-                    if (isset($config['priority']))
-                    {
+                    if (isset($config['priority'])) {
                         $priority = $config['priority'];
                     }
 
-                    if (isset($config['serial'])) 
-                    {
+                    if (isset($config['serial'])) {
                         $serial = $config['serial'];
                     }
-                }
-                else
-                {
+                } else {
                     $route = $config;
                 }
 
                 $this->routes[$name] = [
                     'route' => $this->decore($route),
                     'priority' => $priority,
-                    'serial' => ($this->_serial++) + $serial
+                    'serial' => ($this->_serial++) + $serial,
                 ];
             }
         }
     }
-    
+
     /**
      * @param Route $route
+     *
      * @return Route
      */
     protected function decore(Route $route)
     {
-        foreach ($this->decorators as $method => $arguments)
-        {
+        foreach ($this->decorators as $method => $arguments) {
             call_user_func_array([$route, $method], $arguments);
         }
-        
+
         return $route;
     }
-    
+
     /**
      * @return Collection
      */
     public function forever()
     {
         $this->decorateForever = true;
+
         return $this;
     }
-    
+
     /**
      * @ignore
      */
     public function __call($method, $arguments)
     {
-        foreach ($this->routes as $config)
-        {
+        foreach ($this->routes as $config) {
             call_user_func_array([$config['route'], $method], $arguments);
         }
-        
-        if ($this->decorateForever)
-        {
+
+        if ($this->decorateForever) {
             $this->decorators[][$method] = $arguments;
             $this->decorateForever = false;
         }
     }
-    
+
     /**
      * @ignore
      */
-    public function __clone() 
+    public function __clone()
     {
         $this->routes = [];
         $this->decorateForever = false;
